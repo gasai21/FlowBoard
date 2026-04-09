@@ -38,7 +38,7 @@ class DatabaseService {
 
   Future<void> saveBoards(List<Board> boards) async {
     final db = await database;
-    await db.delete('boards'); // Simple full sync for now
+    await db.delete('boards');
     for (var board in boards) {
       await db.insert('boards', {
         'id': board.id,
@@ -71,6 +71,14 @@ class DatabaseService {
         'id': t.id,
         'title': t.title,
         'description': t.description,
+        'labels': t.labels,
+        'dueDate': t.dueDate?.toIso8601String(),
+        'priority': t.priority.name,
+        'checklist': t.checklist.map((c) => {
+          'id': c.id,
+          'title': c.title,
+          'isDone': c.isDone,
+        }).toList(),
       }).toList(),
     }).toList();
   }
@@ -81,11 +89,24 @@ class DatabaseService {
       return BoardColumn(
         id: colMap['id'],
         title: colMap['title'],
-        tasks: (colMap['tasks'] as List).map((t) => Task(
-          id: t['id'],
-          title: t['title'],
-          description: t['description'],
-        )).toList(),
+        tasks: (colMap['tasks'] as List).map((t) {
+          return Task(
+            id: t['id'],
+            title: t['title'],
+            description: t['description'] ?? '',
+            labels: List<String>.from(t['labels'] ?? []),
+            dueDate: t['dueDate'] != null ? DateTime.parse(t['dueDate']) : null,
+            priority: TaskPriority.values.firstWhere(
+              (e) => e.name == (t['priority'] ?? 'low'),
+              orElse: () => TaskPriority.low,
+            ),
+            checklist: (t['checklist'] as List? ?? []).map((c) => ChecklistItem(
+              id: c['id'],
+              title: c['title'],
+              isDone: c['isDone'] ?? false,
+            )).toList(),
+          );
+        }).toList(),
       );
     }).toList();
   }
