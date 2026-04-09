@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../models/task.dart';
+import '../../../../core/models/task.dart';
 
 class TaskCard extends StatelessWidget {
   final Task task;

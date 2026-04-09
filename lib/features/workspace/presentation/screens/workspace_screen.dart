@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/workspace_provider.dart';
-import 'board_screen.dart';
+import '../../../../core/models/board.dart';
+import '../../../../features/workspace/presentation/providers/workspace_provider.dart';
+import '../../../../features/board/presentation/screens/board_screen.dart';
 
 class WorkspaceScreen extends ConsumerWidget {
   const WorkspaceScreen({super.key});

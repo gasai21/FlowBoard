@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/workspace_provider.dart';
-import '../widgets/task_card.dart';
-import '../models/board_column.dart';
-import '../models/task.dart';
-import 'task_detail_screen.dart';
+import '../../../../core/models/board_column.dart';
+import '../../../../core/models/task.dart';
+import '../../../task/presentation/screens/task_detail_screen.dart';
+import '../../presentation/widgets/task_card.dart';
+import '../../../workspace/presentation/providers/workspace_provider.dart';
 
 class BoardScreen extends ConsumerWidget {
   const BoardScreen({super.key});
@@ -155,7 +155,6 @@ class BoardScreen extends ConsumerWidget {
     
     final updatedColumns = board.columns.map((column) {
       if (column.id == fromColumnId && column.id == toColumnId) {
-         // Same column move (not implemented for index here for simplicity, just stays)
          return column;
       } else if (column.id == fromColumnId) {
         return column.copyWith(tasks: column.tasks.where((t) => t.id != taskId).toList());

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../models/task.dart';
-import '../providers/workspace_provider.dart';
+import '../../../../core/models/task.dart';
+import '../../../workspace/presentation/providers/workspace_provider.dart';
 
 class TaskDetailScreen extends ConsumerStatefulWidget {
   final Task task;

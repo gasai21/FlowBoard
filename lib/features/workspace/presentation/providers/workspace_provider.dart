@@ -1,14 +1,26 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/board.dart';
-import '../models/board_column.dart';
-import '../models/task.dart';
+import '../../../../core/models/board.dart';
+import '../../../../core/models/board_column.dart';
+import '../../../../core/models/task.dart';
+import '../../../../core/database/database_service.dart';
 
 class WorkspaceNotifier extends StateNotifier<List<Board>> {
+  final DatabaseService _db = DatabaseService();
+
   WorkspaceNotifier() : super([]) {
-    _loadInitialData();
+    _loadData();
   }
 
-  void _loadInitialData() {
+  Future<void> _loadData() async {
+    final boards = await _db.getBoards();
+    if (boards.isNotEmpty) {
+      state = boards;
+    } else {
+      _loadInitialDummyData();
+    }
+  }
+
+  void _loadInitialDummyData() {
     state = [
       Board(
         id: '1',
@@ -33,17 +45,20 @@ class WorkspaceNotifier extends StateNotifier<List<Board>> {
         ],
       ),
     ];
+    _db.saveBoards(state);
   }
 
-  void addBoard(String title) {
+  Future<void> addBoard(String title) async {
     state = [...state, Board.create(title)];
+    await _db.saveBoards(state);
   }
 
-  void updateBoard(Board updatedBoard) {
+  Future<void> updateBoard(Board updatedBoard) async {
     state = [
       for (final board in state)
         if (board.id == updatedBoard.id) updatedBoard else board
     ];
+    await _db.saveBoards(state);
   }
 }
 
