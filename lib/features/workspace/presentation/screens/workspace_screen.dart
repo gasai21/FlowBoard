@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/models/board.dart';
+import '../../../../core/widgets/app_logo.dart';
 import '../../../../features/workspace/presentation/providers/workspace_provider.dart';
 import '../../../../features/board/presentation/screens/board_screen.dart';
 
@@ -16,12 +17,18 @@ class WorkspaceScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(
-          'FlowBoard',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF172B4D),
-          ),
+        title: Row(
+          children: [
+            const AppLogo(size: 24),
+            SizedBox(width: 8.w),
+            Text(
+              'FlowBoard',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF172B4D),
+              ),
+            ),
+          ],
         ),
         elevation: 0,
         backgroundColor: Colors.white,

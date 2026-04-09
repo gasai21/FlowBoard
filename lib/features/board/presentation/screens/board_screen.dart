@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/models/board_column.dart';
 import '../../../../core/models/task.dart';
+import '../../../../core/widgets/app_logo.dart';
 import '../../../task/presentation/screens/task_detail_screen.dart';
 import '../../presentation/widgets/task_card.dart';
 import '../../../workspace/presentation/providers/workspace_provider.dart';
@@ -21,12 +22,18 @@ class BoardScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.black12,
         elevation: 0,
-        title: Text(
-          board.title,
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        title: Row(
+          children: [
+            const AppLogo(size: 24, color: Colors.white),
+            SizedBox(width: 8.w),
+            Text(
+              board.title,
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
