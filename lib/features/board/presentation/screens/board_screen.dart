@@ -36,13 +36,16 @@ class BoardScreen extends ConsumerWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (final column in board.columns)
-                _buildColumn(context, ref, column),
-              _buildAddColumnButton(context, ref),
-            ],
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.h),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final column in board.columns)
+                  _buildColumn(context, ref, column),
+                _buildAddColumnButton(context, ref),
+              ],
+            ),
           ),
         ),
       ),
@@ -52,10 +55,13 @@ class BoardScreen extends ConsumerWidget {
   Widget _buildColumn(BuildContext context, WidgetRef ref, BoardColumn column) {
     return Container(
       width: 280.w,
-      margin: EdgeInsets.all(8.w),
+      margin: EdgeInsets.symmetric(horizontal: 8.w),
       decoration: BoxDecoration(
         color: const Color(0xFFF1F2F4),
         borderRadius: BorderRadius.circular(12.r),
+      ),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.8,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -82,44 +88,45 @@ class BoardScreen extends ConsumerWidget {
           ),
           Flexible(
             child: DragTarget<Map<String, dynamic>>(
-              onWillAccept: (data) => true,
+              onWillAccept: (data) => data?['fromColumnId'] != column.id,
               onAccept: (data) {
                 _handleMoveTask(ref, data['taskId'], data['fromColumnId'], column.id);
               },
               builder: (context, candidateData, rejectedData) {
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
+                return Container(
+                  width: double.infinity,
                   padding: EdgeInsets.symmetric(horizontal: 12.w),
-                  itemCount: column.tasks.length,
-                  itemBuilder: (context, index) {
-                    final task = column.tasks[index];
-                    return Draggable<Map<String, dynamic>>(
-                      data: {'taskId': task.id, 'fromColumnId': column.id},
-                      feedback: Material(
-                        color: Colors.transparent,
-                        child: SizedBox(
-                          width: 256.w,
-                          child: TaskCard(task: task, onTap: () {}),
+                  decoration: BoxDecoration(
+                    color: candidateData.isNotEmpty 
+                        ? Colors.black.withOpacity(0.05) 
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (column.tasks.isNotEmpty)
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const ClampingScrollPhysics(),
+                          itemCount: column.tasks.length,
+                          itemBuilder: (context, index) {
+                            final task = column.tasks[index];
+                            return _buildDraggableTask(context, ref, task, column.id);
+                          },
+                        )
+                      else
+                        // Area drop khusus jika kolom kosong
+                        Container(
+                          height: 100.h,
+                          width: double.infinity,
+                          alignment: Alignment.center,
+                          child: candidateData.isNotEmpty 
+                              ? const Icon(Icons.add_circle_outline, color: Color(0xFF0079BF))
+                              : null,
                         ),
-                      ),
-                      childWhenDragging: Opacity(
-                        opacity: 0.5,
-                        child: TaskCard(task: task, onTap: () {}),
-                      ),
-                      child: TaskCard(
-                        task: task,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => TaskDetailScreen(task: task, columnId: column.id),
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
+                    ],
+                  ),
                 );
               },
             ),
@@ -147,18 +154,50 @@ class BoardScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildDraggableTask(BuildContext context, WidgetRef ref, Task task, String columnId) {
+    return Draggable<Map<String, dynamic>>(
+      data: {'taskId': task.id, 'fromColumnId': columnId},
+      feedback: Material(
+        color: Colors.transparent,
+        child: SizedBox(
+          width: 256.w,
+          child: TaskCard(task: task, onTap: () {}),
+        ),
+      ),
+      childWhenDragging: Opacity(
+        opacity: 0.3,
+        child: TaskCard(task: task, onTap: () {}),
+      ),
+      child: TaskCard(
+        task: task,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TaskDetailScreen(task: task, columnId: columnId),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   void _handleMoveTask(WidgetRef ref, String taskId, String fromColumnId, String toColumnId) {
     final board = ref.read(currentBoardProvider)!;
     
+    // Cari task yang akan dipindah
     final fromColumn = board.columns.firstWhere((col) => col.id == fromColumnId);
     final task = fromColumn.tasks.firstWhere((t) => t.id == taskId);
     
     final updatedColumns = board.columns.map((column) {
-      if (column.id == fromColumnId && column.id == toColumnId) {
-         return column;
-      } else if (column.id == fromColumnId) {
-        return column.copyWith(tasks: column.tasks.where((t) => t.id != taskId).toList());
+      if (column.id == fromColumnId) {
+        // Hapus dari kolom asal
+        return column.copyWith(
+          tasks: column.tasks.where((t) => t.id != taskId).toList(),
+        );
       } else if (column.id == toColumnId) {
+        // Tambahkan ke kolom tujuan (mencegah duplikasi)
+        if (column.tasks.any((t) => t.id == taskId)) return column;
         return column.copyWith(tasks: [...column.tasks, task]);
       }
       return column;
@@ -172,7 +211,7 @@ class BoardScreen extends ConsumerWidget {
   Widget _buildAddColumnButton(BuildContext context, WidgetRef ref) {
     return Container(
       width: 280.w,
-      margin: EdgeInsets.all(8.w),
+      margin: EdgeInsets.symmetric(horizontal: 8.w),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12.r),
