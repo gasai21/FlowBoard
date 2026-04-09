@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0079BF"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/widget_workspace_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Main Workspace"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <!-- Board 1 -->
+        <LinearLayout
+            android:id="@+id/widget_board_1_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:background="#30FFFFFF"
+            android:padding="6dp"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/widget_board_1_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Board 1"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+            <TextView
+                android:id="@+id/widget_board_1_tasks"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="0 tasks"
+                android:textColor="#E0E0E0"
+                android:textSize="9sp" />
+        </LinearLayout>
+
+        <!-- Board 2 -->
+        <LinearLayout
+            android:id="@+id/widget_board_2_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:background="#30FFFFFF"
+            android:padding="6dp"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/widget_board_2_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Board 2"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+            <TextView
+                android:id="@+id/widget_board_2_tasks"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="0 tasks"
+                android:textColor="#E0E0E0"
+                android:textSize="9sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <!-- Board 3 -->
+        <LinearLayout
+            android:id="@+id/widget_board_3_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:background="#30FFFFFF"
+            android:padding="6dp"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/widget_board_3_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Board 3"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+            <TextView
+                android:id="@+id/widget_board_3_tasks"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="0 tasks"
+                android:textColor="#E0E0E0"
+                android:textSize="9sp" />
+        </LinearLayout>
+
+        <!-- Board 4 -->
+        <LinearLayout
+            android:id="@+id/widget_board_4_container"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:background="#30FFFFFF"
+            android:padding="6dp"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/widget_board_4_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Board 4"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+            <TextView
+                android:id="@+id/widget_board_4_tasks"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="0 tasks"
+                android:textColor="#E0E0E0"
+                android:textSize="9sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>
