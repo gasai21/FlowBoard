@@ -82,7 +82,12 @@ class BoardScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const Icon(Icons.more_horiz, size: 20, color: Color(0xFF44546F)),
+                IconButton(
+                  icon: const Icon(Icons.more_horiz, size: 20, color: Color(0xFF44546F)),
+                  onPressed: () => _showColumnOptions(context, ref, column),
+                  constraints: const BoxConstraints(),
+                  padding: EdgeInsets.zero,
+                ),
               ],
             ),
           ),
@@ -116,7 +121,6 @@ class BoardScreen extends ConsumerWidget {
                           },
                         )
                       else
-                        // Area drop khusus jika kolom kosong
                         Container(
                           height: 100.h,
                           width: double.infinity,
@@ -154,6 +158,90 @@ class BoardScreen extends ConsumerWidget {
     );
   }
 
+  void _showColumnOptions(BuildContext context, WidgetRef ref, BoardColumn column) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Rename List'),
+              onTap: () {
+                Navigator.pop(context);
+                _showRenameColumnDialog(context, ref, column);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text('Delete List', style: TextStyle(color: Colors.red)),
+              onTap: () {
+                Navigator.pop(context);
+                _showDeleteColumnConfirmation(context, ref, column);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showRenameColumnDialog(BuildContext context, WidgetRef ref, BoardColumn column) {
+    final controller = TextEditingController(text: column.title);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Rename List', style: GoogleFonts.poppins()),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'List Title'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              if (controller.text.isNotEmpty) {
+                final board = ref.read(currentBoardProvider)!;
+                final updatedColumns = board.columns.map((c) => c.id == column.id ? c.copyWith(title: controller.text) : c).toList();
+                final updatedBoard = board.copyWith(columns: updatedColumns);
+                ref.read(currentBoardProvider.notifier).state = updatedBoard;
+                ref.read(workspaceProvider.notifier).updateBoard(updatedBoard);
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteColumnConfirmation(BuildContext context, WidgetRef ref, BoardColumn column) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete List?', style: GoogleFonts.poppins()),
+        content: Text('Delete "${column.title}" and all its tasks?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              final board = ref.read(currentBoardProvider)!;
+              final updatedColumns = board.columns.where((c) => c.id != column.id).toList();
+              final updatedBoard = board.copyWith(columns: updatedColumns);
+              ref.read(currentBoardProvider.notifier).state = updatedBoard;
+              ref.read(workspaceProvider.notifier).updateBoard(updatedBoard);
+              Navigator.pop(context);
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDraggableTask(BuildContext context, WidgetRef ref, Task task, String columnId) {
     return Draggable<Map<String, dynamic>>(
       data: {'taskId': task.id, 'fromColumnId': columnId},
@@ -184,19 +272,13 @@ class BoardScreen extends ConsumerWidget {
 
   void _handleMoveTask(WidgetRef ref, String taskId, String fromColumnId, String toColumnId) {
     final board = ref.read(currentBoardProvider)!;
-    
-    // Cari task yang akan dipindah
     final fromColumn = board.columns.firstWhere((col) => col.id == fromColumnId);
     final task = fromColumn.tasks.firstWhere((t) => t.id == taskId);
     
     final updatedColumns = board.columns.map((column) {
       if (column.id == fromColumnId) {
-        // Hapus dari kolom asal
-        return column.copyWith(
-          tasks: column.tasks.where((t) => t.id != taskId).toList(),
-        );
+        return column.copyWith(tasks: column.tasks.where((t) => t.id != taskId).toList());
       } else if (column.id == toColumnId) {
-        // Tambahkan ke kolom tujuan (mencegah duplikasi)
         if (column.tasks.any((t) => t.id == taskId)) return column;
         return column.copyWith(tasks: [...column.tasks, task]);
       }

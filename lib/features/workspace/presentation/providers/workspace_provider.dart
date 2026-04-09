@@ -60,6 +60,11 @@ class WorkspaceNotifier extends StateNotifier<List<Board>> {
     ];
     await _db.saveBoards(state);
   }
+
+  Future<void> deleteBoard(String boardId) async {
+    state = state.where((board) => board.id != boardId).toList();
+    await _db.saveBoards(state);
+  }
 }
 
 final workspaceProvider = StateNotifierProvider<WorkspaceNotifier, List<Board>>((ref) {

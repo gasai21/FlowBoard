@@ -36,6 +36,13 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     _labels.addAll(widget.task.labels);
   }
 
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descController.dispose();
+    super.dispose();
+  }
+
   void _saveChanges() {
     final board = ref.read(currentBoardProvider);
     if (board == null) return;
@@ -65,6 +72,42 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     ref.read(workspaceProvider.notifier).updateBoard(updatedBoard);
   }
 
+  void _deleteTask() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Task?', style: GoogleFonts.poppins()),
+        content: const Text('Are you sure you want to delete this task?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              final board = ref.read(currentBoardProvider);
+              if (board != null) {
+                final updatedColumns = board.columns.map((col) {
+                  if (col.id == widget.columnId) {
+                    return col.copyWith(
+                      tasks: col.tasks.where((t) => t.id != widget.task.id).toList(),
+                    );
+                  }
+                  return col;
+                }).toList();
+                
+                final updatedBoard = board.copyWith(columns: updatedColumns);
+                ref.read(currentBoardProvider.notifier).state = updatedBoard;
+                ref.read(workspaceProvider.notifier).updateBoard(updatedBoard);
+              }
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Back to Board
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,6 +122,12 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             Navigator.pop(context);
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: Colors.red),
+            onPressed: _deleteTask,
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(20.w),
@@ -159,6 +208,31 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
               ),
             ),
             SizedBox(height: 32.h),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  _saveChanges();
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0079BF),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 12.h),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                ),
+                child: Text('Save Changes', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: _deleteTask,
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Delete Task'),
+              ),
+            ),
           ],
         ),
       ),
