@@ -183,13 +183,28 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
               },
             ),
             _buildSectionHeader(Icons.checklist, 'Checklist'),
-            ..._checklist.asMap().entries.map((entry) => CheckboxListTile(
-              title: Text(entry.value.title),
-              value: entry.value.isDone,
-              onChanged: (val) => setState(() {
-                _checklist[entry.key] = entry.value.copyWith(isDone: val);
-              }),
-              controlAffinity: ListTileControlAffinity.leading,
+            ..._checklist.asMap().entries.map((entry) => ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Checkbox(
+                value: entry.value.isDone,
+                onChanged: (val) => setState(() {
+                  _checklist[entry.key] = entry.value.copyWith(isDone: val);
+                }),
+              ),
+              title: Text(
+                entry.value.title,
+                style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  decoration: entry.value.isDone ? TextDecoration.lineThrough : null,
+                  color: entry.value.isDone ? const Color(0xFF44546F) : const Color(0xFF172B4D),
+                ),
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                onPressed: () => setState(() {
+                  _checklist.removeAt(entry.key);
+                }),
+              ),
             )),
             TextButton.icon(
               onPressed: () => _showAddChecklistDialog(),

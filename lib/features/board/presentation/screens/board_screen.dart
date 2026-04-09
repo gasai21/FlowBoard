@@ -34,19 +34,24 @@ class BoardScreen extends ConsumerWidget {
         ),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.h),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (final column in board.columns)
-                  _buildColumn(context, ref, column),
-                _buildAddColumnButton(context, ref),
-              ],
-            ),
-          ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Container(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                padding: EdgeInsets.symmetric(vertical: 8.h),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (final column in board.columns)
+                      _buildColumn(context, ref, column),
+                    _buildAddColumnButton(context, ref),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -243,7 +248,8 @@ class BoardScreen extends ConsumerWidget {
   }
 
   Widget _buildDraggableTask(BuildContext context, WidgetRef ref, Task task, String columnId) {
-    return Draggable<Map<String, dynamic>>(
+    return LongPressDraggable<Map<String, dynamic>>(
+      hapticFeedbackOnStart: true,
       data: {'taskId': task.id, 'fromColumnId': columnId},
       feedback: Material(
         color: Colors.transparent,
