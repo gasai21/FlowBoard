@@ -28,8 +28,8 @@ Aplikasi ini terinspirasi dari workflow modern seperti Trello, dengan fokus pada
 ## 🛠️ Tech Stack
 
 - **Flutter** (Material 3)
-- **State Management**: Riverpod *(optional / sesuai implementasi)*
-- **Local Storage**: Hive *(optional / sesuai implementasi)*
+- **State Management**: Riverpod 
+- **Local Storage**: sqllite
 
 ---
 
