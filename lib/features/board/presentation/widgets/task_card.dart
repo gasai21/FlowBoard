@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/models/task.dart';
 
@@ -25,6 +24,7 @@ class TaskCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final completedChecklist = task.checklist.where((item) => item.isDone).length;
     final totalChecklist = task.checklist.length;
+    final progress = totalChecklist > 0 ? completedChecklist / totalChecklist : 0.0;
 
     return GestureDetector(
       onTap: onTap,
@@ -59,7 +59,7 @@ class TaskCard extends StatelessWidget {
                     ),
                     child: Text(
                       label,
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 10.sp,
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF0079BF),
@@ -70,7 +70,7 @@ class TaskCard extends StatelessWidget {
               ),
             Text(
               task.title,
-              style: GoogleFonts.inter(
+              style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w500,
                 color: const Color(0xFF172B4D),
@@ -93,7 +93,7 @@ class TaskCard extends StatelessWidget {
                   SizedBox(width: 4.w),
                   Text(
                     DateFormat('MMM d').format(task.dueDate!),
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
                       fontSize: 11.sp,
                       color: const Color(0xFF44546F),
                     ),
@@ -109,7 +109,7 @@ class TaskCard extends StatelessWidget {
                   SizedBox(width: 4.w),
                   Text(
                     '$completedChecklist/$totalChecklist',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
                       fontSize: 11.sp,
                       color: completedChecklist == totalChecklist ? Colors.green : const Color(0xFF44546F),
                     ),
@@ -117,6 +117,18 @@ class TaskCard extends StatelessWidget {
                 ],
               ],
             ),
+            if (totalChecklist > 0) ...[
+              SizedBox(height: 8.h),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(2.r),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 4.h,
+                  backgroundColor: const Color(0xFFF1F2F4),
+                  color: progress == 1.0 ? Colors.green : const Color(0xFF0079BF),
+                ),
+              ),
+            ],
           ],
         ),
       ),

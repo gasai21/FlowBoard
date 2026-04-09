@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/models/board_column.dart';
 import '../../../../core/models/task.dart';
 import '../../../../core/widgets/app_logo.dart';
@@ -28,7 +27,7 @@ class BoardScreen extends ConsumerWidget {
             SizedBox(width: 8.w),
             Text(
               board.title,
-              style: GoogleFonts.poppins(
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
@@ -87,10 +86,10 @@ class BoardScreen extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     column.title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14.sp,
+                    style: const TextStyle(
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF172B4D),
+                      color: Color(0xFF172B4D),
                     ),
                   ),
                 ),
@@ -139,7 +138,20 @@ class BoardScreen extends ConsumerWidget {
                           alignment: Alignment.center,
                           child: candidateData.isNotEmpty 
                               ? const Icon(Icons.add_circle_outline, color: Color(0xFF0079BF))
-                              : null,
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.assignment_outlined, color: Colors.grey.shade400, size: 32),
+                                    SizedBox(height: 8.h),
+                                    Text(
+                                      'No tasks yet',
+                                      style: TextStyle(
+                                        color: Colors.grey.shade500,
+                                        fontSize: 12.sp,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                         ),
                     ],
                   ),
@@ -152,10 +164,10 @@ class BoardScreen extends ConsumerWidget {
             child: TextButton.icon(
               onPressed: () => _showAddTaskDialog(context, ref, column.id),
               icon: const Icon(Icons.add, size: 18),
-              label: Text(
+              label: const Text(
                 'Add a card',
-                style: GoogleFonts.inter(
-                  fontSize: 13.sp,
+                style: TextStyle(
+                  fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -203,7 +215,7 @@ class BoardScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Rename List', style: GoogleFonts.poppins()),
+        title: const Text('Rename List'),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -233,7 +245,7 @@ class BoardScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete List?', style: GoogleFonts.poppins()),
+        title: const Text('Delete List?'),
         content: Text('Delete "${column.title}" and all its tasks?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
@@ -314,9 +326,9 @@ class BoardScreen extends ConsumerWidget {
       child: TextButton.icon(
         onPressed: () => _showAddColumnDialog(context, ref),
         icon: const Icon(Icons.add, color: Colors.white),
-        label: Text(
+        label: const Text(
           'Add another list',
-          style: GoogleFonts.inter(
+          style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w600,
           ),
@@ -330,7 +342,7 @@ class BoardScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('New Task', style: GoogleFonts.poppins()),
+        title: const Text('New Task'),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -367,7 +379,7 @@ class BoardScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('New List', style: GoogleFonts.poppins()),
+        title: const Text('New List'),
         content: TextField(
           controller: controller,
           autofocus: true,

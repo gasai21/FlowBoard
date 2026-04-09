@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/models/task.dart';
@@ -76,7 +75,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete Task?', style: GoogleFonts.poppins()),
+        title: const Text('Delete Task?'),
         content: const Text('Are you sure you want to delete this task?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
@@ -110,6 +109,12 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double progress = 0;
+    if (_checklist.isNotEmpty) {
+      int completed = _checklist.where((item) => item.isDone).length;
+      progress = completed / _checklist.length;
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -136,7 +141,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           children: [
             TextField(
               controller: _titleController,
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF172B4D),
@@ -183,6 +188,28 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
               },
             ),
             _buildSectionHeader(Icons.checklist, 'Checklist'),
+            if (_checklist.isNotEmpty) ...[
+              Padding(
+                padding: EdgeInsets.only(bottom: 8.h),
+                child: Row(
+                  children: [
+                    Text('${(progress * 100).toInt()}%', style: TextStyle(fontSize: 12.sp, color: const Color(0xFF44546F))),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4.r),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          backgroundColor: const Color(0xFFF1F2F4),
+                          color: progress == 1.0 ? Colors.green : const Color(0xFF0079BF),
+                          minHeight: 8.h,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             ..._checklist.asMap().entries.map((entry) => ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Checkbox(
@@ -193,7 +220,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
               ),
               title: Text(
                 entry.value.title,
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: 14.sp,
                   decoration: entry.value.isDone ? TextDecoration.lineThrough : null,
                   color: entry.value.isDone ? const Color(0xFF44546F) : const Color(0xFF172B4D),
@@ -236,7 +263,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   padding: EdgeInsets.symmetric(vertical: 12.h),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
                 ),
-                child: Text('Save Changes', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+                child: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
             SizedBox(height: 12.h),
@@ -261,7 +288,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
         children: [
           Icon(icon, size: 20, color: const Color(0xFF44546F)),
           SizedBox(width: 8.w),
-          Text(title, style: GoogleFonts.inter(fontSize: 16.sp, fontWeight: FontWeight.w600)),
+          Text(title, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600)),
         ],
       ),
     );
