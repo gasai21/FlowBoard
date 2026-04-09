@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/board_provider.dart';
+import '../providers/workspace_provider.dart';
 import '../widgets/task_card.dart';
+import '../models/board_column.dart';
 import '../models/task.dart';
 import 'task_detail_screen.dart';
 
@@ -12,28 +13,25 @@ class BoardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final columns = ref.watch(boardProvider);
+    final board = ref.watch(currentBoardProvider);
+    if (board == null) return const Scaffold();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0079BF),
+      backgroundColor: Color(int.parse(board.backgroundColor)),
       appBar: AppBar(
         backgroundColor: Colors.black12,
         elevation: 0,
         title: Text(
-          'FlowBoard',
+          board.title,
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add, color: Colors.white),
-            onPressed: () {
-              // Add Column logic
-            },
-          )
-        ],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -41,7 +39,7 @@ class BoardScreen extends ConsumerWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              for (final column in columns)
+              for (final column in board.columns)
                 _buildColumn(context, ref, column),
               _buildAddColumnButton(context, ref),
             ],
@@ -51,7 +49,7 @@ class BoardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildColumn(BuildContext context, WidgetRef ref, column) {
+  Widget _buildColumn(BuildContext context, WidgetRef ref, BoardColumn column) {
     return Container(
       width: 280.w,
       margin: EdgeInsets.all(8.w),
@@ -86,14 +84,7 @@ class BoardScreen extends ConsumerWidget {
             child: DragTarget<Map<String, dynamic>>(
               onWillAccept: (data) => true,
               onAccept: (data) {
-                final taskId = data['taskId'];
-                final fromColumnId = data['fromColumnId'];
-                ref.read(boardProvider.notifier).moveTask(
-                      taskId,
-                      fromColumnId,
-                      column.id,
-                      column.tasks.length,
-                    );
+                _handleMoveTask(ref, data['taskId'], data['fromColumnId'], column.id);
               },
               builder: (context, candidateData, rejectedData) {
                 return ListView.builder(
@@ -122,7 +113,7 @@ class BoardScreen extends ConsumerWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => TaskDetailScreen(task: task),
+                              builder: (context) => TaskDetailScreen(task: task, columnId: column.id),
                             ),
                           );
                         },
@@ -136,9 +127,7 @@ class BoardScreen extends ConsumerWidget {
           Padding(
             padding: EdgeInsets.all(8.w),
             child: TextButton.icon(
-              onPressed: () {
-                _showAddTaskDialog(context, ref, column.id);
-              },
+              onPressed: () => _showAddTaskDialog(context, ref, column.id),
               icon: const Icon(Icons.add, size: 18),
               label: Text(
                 'Add a card',
@@ -158,6 +147,29 @@ class BoardScreen extends ConsumerWidget {
     );
   }
 
+  void _handleMoveTask(WidgetRef ref, String taskId, String fromColumnId, String toColumnId) {
+    final board = ref.read(currentBoardProvider)!;
+    
+    final fromColumn = board.columns.firstWhere((col) => col.id == fromColumnId);
+    final task = fromColumn.tasks.firstWhere((t) => t.id == taskId);
+    
+    final updatedColumns = board.columns.map((column) {
+      if (column.id == fromColumnId && column.id == toColumnId) {
+         // Same column move (not implemented for index here for simplicity, just stays)
+         return column;
+      } else if (column.id == fromColumnId) {
+        return column.copyWith(tasks: column.tasks.where((t) => t.id != taskId).toList());
+      } else if (column.id == toColumnId) {
+        return column.copyWith(tasks: [...column.tasks, task]);
+      }
+      return column;
+    }).toList();
+
+    final updatedBoard = board.copyWith(columns: updatedColumns);
+    ref.read(currentBoardProvider.notifier).state = updatedBoard;
+    ref.read(workspaceProvider.notifier).updateBoard(updatedBoard);
+  }
+
   Widget _buildAddColumnButton(BuildContext context, WidgetRef ref) {
     return Container(
       width: 280.w,
@@ -167,9 +179,7 @@ class BoardScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: TextButton.icon(
-        onPressed: () {
-           _showAddColumnDialog(context, ref);
-        },
+        onPressed: () => _showAddColumnDialog(context, ref),
         icon: const Icon(Icons.add, color: Colors.white),
         label: Text(
           'Add another list',
@@ -194,14 +204,21 @@ class BoardScreen extends ConsumerWidget {
           decoration: const InputDecoration(hintText: 'Enter task title'),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           TextButton(
             onPressed: () {
               if (controller.text.isNotEmpty) {
-                ref.read(boardProvider.notifier).addTask(columnId, controller.text);
+                final board = ref.read(currentBoardProvider)!;
+                final updatedColumns = board.columns.map((col) {
+                  if (col.id == columnId) {
+                    return col.copyWith(tasks: [...col.tasks, Task.create(controller.text)]);
+                  }
+                  return col;
+                }).toList();
+                
+                final updatedBoard = board.copyWith(columns: updatedColumns);
+                ref.read(currentBoardProvider.notifier).state = updatedBoard;
+                ref.read(workspaceProvider.notifier).updateBoard(updatedBoard);
                 Navigator.pop(context);
               }
             },
@@ -224,14 +241,16 @@ class BoardScreen extends ConsumerWidget {
           decoration: const InputDecoration(hintText: 'Enter list title'),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           TextButton(
             onPressed: () {
               if (controller.text.isNotEmpty) {
-                ref.read(boardProvider.notifier).addColumn(controller.text);
+                final board = ref.read(currentBoardProvider)!;
+                final updatedBoard = board.copyWith(
+                  columns: [...board.columns, BoardColumn.create(controller.text)],
+                );
+                ref.read(currentBoardProvider.notifier).state = updatedBoard;
+                ref.read(workspaceProvider.notifier).updateBoard(updatedBoard);
                 Navigator.pop(context);
               }
             },

@@ -3,12 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/task.dart';
-import '../providers/board_provider.dart';
+import '../providers/workspace_provider.dart';
 
 class TaskDetailScreen extends ConsumerStatefulWidget {
   final Task task;
+  final String columnId;
 
-  const TaskDetailScreen({super.key, required this.task});
+  const TaskDetailScreen({super.key, required this.task, required this.columnId});
 
   @override
   ConsumerState<TaskDetailScreen> createState() => _TaskDetailScreenState();
@@ -33,11 +34,28 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
   }
 
   void _saveChanges() {
-    ref.read(boardProvider.notifier).updateTask(
-      widget.task.id,
-      title: _titleController.text,
-      description: _descController.text,
-    );
+    final board = ref.read(currentBoardProvider);
+    if (board == null) return;
+
+    final updatedColumns = board.columns.map((col) {
+      if (col.id == widget.columnId) {
+        final updatedTasks = col.tasks.map((t) {
+          if (t.id == widget.task.id) {
+            return t.copyWith(
+              title: _titleController.text,
+              description: _descController.text,
+            );
+          }
+          return t;
+        }).toList();
+        return col.copyWith(tasks: updatedTasks);
+      }
+      return col;
+    }).toList();
+
+    final updatedBoard = board.copyWith(columns: updatedColumns);
+    ref.read(currentBoardProvider.notifier).state = updatedBoard;
+    ref.read(workspaceProvider.notifier).updateBoard(updatedBoard);
   }
 
   @override
@@ -54,12 +72,6 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             Navigator.pop(context);
           },
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: Color(0xFF172B4D)),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(20.w),
@@ -77,7 +89,6 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                 border: InputBorder.none,
                 hintText: 'Task Title',
               ),
-              onChanged: (_) => _saveChanges(),
             ),
             SizedBox(height: 20.h),
             Row(
@@ -111,7 +122,22 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   borderSide: BorderSide.none,
                 ),
               ),
-              onChanged: (_) => _saveChanges(),
+            ),
+            SizedBox(height: 24.h),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  _saveChanges();
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0079BF),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                ),
+                child: const Text('Save Changes'),
+              ),
             ),
           ],
         ),

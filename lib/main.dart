@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'screens/board_screen.dart';
+import 'screens/workspace_screen.dart';
 
 void main() {
   runApp(
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: const Size(375, 812), // iPhone X size as base
+      designSize: const Size(375, 812),
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
               primary: const Color(0xFF0079BF),
             ),
           ),
-          home: const BoardScreen(),
+          home: const WorkspaceScreen(),
         );
       },
     );
